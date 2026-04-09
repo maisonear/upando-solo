@@ -241,8 +241,8 @@ class CombatSystem {
 
     // Player uses skill
     useSkill(player, skillName, enemies) {
-        // === DASH SKILL: Passos Rápidos ===
-        if (skillName === 'quick_steps') {
+        // === DASH SKILL ===
+        if (skillName === 'dash') {
             const dashCost = 15;
             const dashDistance = 150;
             const dashCooldownTime = 3;

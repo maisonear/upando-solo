@@ -23,10 +23,13 @@
                     <h1 class="ns-title">SISTEMA<br><span>ATIVADO</span></h1>
                 </div>
                 <div class="ns-prompt">DADOS DE SALVAMENTO DETECTADOS.</div>
-                
-                <div class="save-actions" style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+
+                <div class="save-actions"
+                    style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px; align-items: center;">
                     <button id="load-game-btn" class="ns-confirm-btn" style="width: 250px;">CONTINUAR</button>
-                    <button id="new-game-btn" class="ns-confirm-btn" style="width: 250px; background: rgba(220, 38, 38, 0.2); border-color: rgba(220, 38, 38, 0.5);">NOVO JOGO</button>
+                    <button id="new-game-btn" class="ns-confirm-btn"
+                        style="width: 250px; background: rgba(220, 38, 38, 0.2); border-color: rgba(220, 38, 38, 0.5);">NOVO
+                        JOGO</button>
                 </div>
             </div>
         </div>
@@ -56,7 +59,8 @@
 
                 <!-- Input area -->
                 <div class="ns-input-wrapper">
-                    <input type="text" id="player-name-input" maxlength="15" placeholder="Digite seu nome, caçador..." autocomplete="off" />
+                    <input type="text" id="player-name-input" maxlength="15" placeholder="Digite seu nome, caçador..."
+                        autocomplete="off" />
                 </div>
                 <!-- Error msg -->
                 <div id="name-error" class="ns-error-msg" style="display:none;"></div>
@@ -107,6 +111,13 @@
                         <div class="bar xp-bar">
                             <div class="bar-fill" id="xp-fill"></div>
                             <div class="bar-text"><span id="xp-text">0/100</span></div>
+                        </div>
+                    </div>
+                    <div class="bar-wrapper" id="dash-bar-wrapper">
+                        <div class="bar-label">DASH</div>
+                        <div class="bar dash-bar">
+                            <div class="bar-fill" id="dash-fill"></div>
+                            <div class="bar-text">PRONTO (1)</div>
                         </div>
                     </div>
                 </div>
@@ -277,69 +288,8 @@
             </div>
 
             <!-- Hotbar -->
-            <div id="hotbar">
-                <div class="hotbar-slot" data-key="1">
-                    <div class="key-hint">1</div>
-                    <div class="slot-content" id="hotbar-1"></div>
-                </div>
-                <div class="hotbar-slot" data-key="2">
-                    <div class="key-hint">2</div>
-                    <div class="slot-content" id="hotbar-2"></div>
-                </div>
-                <div class="hotbar-slot" data-key="3">
-                    <div class="key-hint">3</div>
-                    <div class="slot-content" id="hotbar-3"></div>
-                </div>
-                <div class="hotbar-slot" data-key="4">
-                    <div class="key-hint">4</div>
-                    <div class="slot-content" id="hotbar-4"></div>
-                </div>
-                <div class="hotbar-slot" data-key="5">
-                    <div class="key-hint">5</div>
-                    <div class="slot-content" id="hotbar-5"></div>
-                </div>
-                <div class="hotbar-slot" data-key="6">
-                    <div class="key-hint">6</div>
-                    <div class="slot-content" id="hotbar-6"></div>
-                </div>
-                <div class="hotbar-slot" data-key="7">
-                    <div class="key-hint">7</div>
-                    <div class="slot-content" id="hotbar-7"></div>
-                </div>
-                <div class="hotbar-slot" data-key="8">
-                    <div class="key-hint">8</div>
-                    <div class="slot-content" id="hotbar-8"></div>
-                </div>
-                <div class="hotbar-slot" data-key="9">
-                    <div class="key-hint">9</div>
-                    <div class="slot-content" id="hotbar-9"></div>
-                </div>
-                <div class="hotbar-slot" data-key="0">
-                    <div class="key-hint">0</div>
-                    <div class="slot-content" id="hotbar-0"></div>
-                </div>
-                <div class="hotbar-separator"></div>
-                <div class="hotbar-slot" data-key="q">
-                    <div class="key-hint">Q</div>
-                    <div class="slot-content" id="hotbar-potion-weak">
-                        <span style="font-size: 20px;">🧪</span>
-                        <span class="count" id="potion-weak-count">0</span>
-                    </div>
-                </div>
-                <div class="hotbar-slot" data-key="l">
-                    <div class="key-hint">L</div>
-                    <div class="slot-content" id="hotbar-potion-mp">
-                        <span style="font-size: 20px;">💙</span>
-                        <span class="count" id="potion-mp-count">0</span>
-                    </div>
-                </div>
-                <div class="hotbar-slot" data-key="k">
-                    <div class="key-hint">K</div>
-                    <div class="slot-content" id="hotbar-potion-strong">
-                        <span style="font-size: 20px;">🍷</span>
-                        <span class="count" id="potion-strong-count">0</span>
-                    </div>
-                </div>
+            <div id="hotbar" class="vertical-hotbar">
+                <!-- Skills will be dynamically populated here -->
             </div>
 
             <!-- Bottom Controls -->
@@ -347,8 +297,8 @@
                 <button class="control-btn" onclick="game.ui.toggleStatsPanel()">📊 Stats (C)</button>
                 <button class="control-btn" onclick="game.ui.toggleInventory()">🎒 Inventário (I)</button>
                 <button class="control-btn" id="btn-stage">🏰 Dungeons (G)</button>
-                <button class="control-btn" onclick="game.ui.toggleSkillsPanel()">⚔️ Habilidades</button>
-                <button class="control-btn" onclick="game.ui.toggleShop()">🛒 Loja</button>
+                <button class="control-btn" onclick="game.ui.toggleSkillsPanel()">⚔️ Habilidades (B)</button>
+                <button class="control-btn" onclick="game.ui.toggleShop()">🛒 Loja (Tab)</button>
             </div>
 
             <!-- Damage Numbers Container -->

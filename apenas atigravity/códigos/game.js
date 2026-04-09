@@ -203,6 +203,13 @@ class Game {
             if (e.key === 'g' || e.key === 'G') {
                 this.ui.toggleStagePanel();
             }
+            if (e.key === 'b' || e.key === 'B') {
+                this.ui.toggleSkillsPanel();
+            }
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                this.ui.toggleShop();
+            }
             if (e.key === 'p' || e.key === 'P') {
                 if (this.isPaused) {
                     this.resume();
@@ -225,8 +232,13 @@ class Game {
             // Skill Hotkeys (1-9 and 0)
             if (['1','2','3','4','5','6','7','8','9','0'].includes(key)) {
                 if (this.player && this.player.hotbar[key]) {
-                    this.combatSystem.useSkill(this.player, this.player.hotbar[key], this.enemySpawner.getAllEnemies());
-                    this.ui.highlightHotbarSlot(key);
+                    // Check if skill is activated
+                    if (this.player.activatedSkills[key]) {
+                        this.combatSystem.useSkill(this.player, this.player.hotbar[key], this.enemySpawner.getAllEnemies());
+                        this.ui.highlightHotbarSlot(key);
+                    } else {
+                        this.ui.showNotification('Habilidade não ativada! Ative-a na HUD.', 'warning');
+                    }
                 }
             }
 

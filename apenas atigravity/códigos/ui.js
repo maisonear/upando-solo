@@ -53,6 +53,38 @@ class UISystem {
 
         // Level
         document.getElementById('player-level').textContent = player.level;
+
+        // Dash Bar
+        const dashBar = document.getElementById('dash-fill');
+        const dashText = document.querySelector('#dash-bar-wrapper .bar-text');
+        
+        if (dashBar && dashText) {
+            const dashCooldown = player.dashCooldown || 0;
+            const maxCooldown = 3; // Fixed 3s according to combat.js
+            
+            if (dashCooldown > 0) {
+                // Barra enche conforme recarrega (de 0% a 100%)
+                const dashPercent = (1 - (dashCooldown / maxCooldown)) * 100;
+                dashBar.style.width = `${dashPercent}%`;
+                dashText.textContent = `${dashCooldown.toFixed(1)}s`;
+                dashBar.parentElement.style.opacity = "0.7";
+            } else {
+                dashBar.style.width = "100%";
+                dashText.textContent = "PRONTO (1)";
+                dashBar.parentElement.style.opacity = "1";
+            }
+        }
+
+        // Update Skill Overlays
+        this.updateAllCooldownOverlays(player);
+    }
+
+    updateAllCooldownOverlays(player) {
+        for (let key in player.hotbar) {
+            if (player.hotbar[key]) {
+                this.updateSkillCooldownOverlay(key, player);
+            }
+        }
     }
 
     // Update stats panel
@@ -450,37 +482,45 @@ class UISystem {
         skillsList.innerHTML = '';
         document.getElementById('skill-points').textContent = player.level;
 
-        // Load all active skills dynamically
-        const skills = Object.values(ActiveSkills).map(activeSkill => ({
-            id: activeSkill.id,
-            name: activeSkill.name,
-            desc: activeSkill.description,
-            cost: activeSkill.manaCost || 0,
-            requiredLevel: activeSkill.requiredLevel || Math.max(1, Math.floor((activeSkill.manaCost || 0) / 10)),
-            icon: activeSkill.icon || '❓'
+        // 1. Load and Sort skills by power
+        const allSkills = Object.values(ActiveSkills).map(s => ({
+            id: s.id,
+            name: s.name,
+            desc: s.description,
+            cost: s.manaCost || 0,
+            requiredLevel: s.requiredLevel || Math.max(1, Math.floor((s.cost || 0) / 10)),
+            icon: s.icon || '❓'
         }));
+
+        // Dash first, then by MP cost
+        allSkills.sort((a, b) => {
+            if (a.id === 'dash') return -1;
+            if (b.id === 'dash') return 1;
+            return a.cost - b.cost;
+        });
 
         const hotbarKeys = ['1','2','3','4','5','6','7','8','9','0'];
 
-        skills.forEach(skill => {
+        allSkills.forEach((skill, index) => {
             const isUnlocked = player.level >= skill.requiredLevel;
-            const skillItem = document.createElement('div');
-            skillItem.className = 'skill-item';
-            if (!isUnlocked) skillItem.style.opacity = '0.5';
+            const key = hotbarKeys[index] || '?';
+            const isActivated = player.activatedSkills[key] && player.hotbar[key] === skill.id;
 
-            const assignBtns = hotbarKeys.map(k =>
-                `<button class="skill-btn small" onclick="game.ui.assignSkill('${k}', '${skill.id}')" ${!isUnlocked ? 'disabled' : ''}>${k}</button>`
-            ).join('\n');
+            const skillItem = document.createElement('div');
+            skillItem.className = `skill-item ${isActivated ? 'active-on-hotbar' : ''}`;
+            if (!isUnlocked) skillItem.style.opacity = '0.4';
 
             skillItem.innerHTML = `
                  <div class="skill-info">
-                     <div class="skill-name">${skill.name} ${!isUnlocked ? '(Bloqueado)' : ''}</div>
-                     <div class="skill-desc">${skill.desc}</div>
-                     <div class="skill-cost">Custo: ${skill.cost} MP | Nível Req: ${skill.requiredLevel}</div>
+                     <div class="skill-name" style="font-size: 24px; font-weight: 900;">${skill.name} ${!isUnlocked ? '(Bloqueado)' : ''}</div>
+                     <div class="skill-desc" style="font-size: 16px; margin: 8px 0; color: #ccc;">${skill.desc}</div>
+                     <div class="skill-cost" style="color: var(--secondary-color); font-weight: 700;">Custo: ${skill.cost} MP | Nível Req: ${skill.requiredLevel}</div>
                  </div>
-                 <div class="skill-action">
-                     <div class="assign-buttons">
-                        ${assignBtns}
+                 <div class="skill-action-row">
+                     <div class="skill-key-hint">Tecla ${key}</div>
+                     <div class="skill-act-btns">
+                        <button class="skill-act-btn activate" onclick="game.ui.toggleSkillActivation('${key}', true, '${skill.id}')" ${!isUnlocked || isActivated ? 'disabled' : ''}>ATIVAR</button>
+                        <button class="skill-act-btn deactivate" onclick="game.ui.toggleSkillActivation('${key}', false, '${skill.id}')" ${!isActivated ? 'disabled' : ''}>DESATIVAR</button>
                      </div>
                  </div>
              `;
@@ -498,39 +538,113 @@ class UISystem {
         }
     }
 
-    // Update Hotbar UI
+    // Update Hotbar UI (Vertical)
     updateHotbar(player) {
-        // Update skill slots (1-9, 0)
-        ['1','2','3','4','5','6','7','8','9','0'].forEach(key => {
-            const slot = document.getElementById(`hotbar-${key}`);
-            if (!slot) return;
-            const skillId = player.hotbar[key];
+        const hotbarContainer = document.getElementById('hotbar');
+        if (!hotbarContainer) return;
 
+        hotbarContainer.innerHTML = '';
+
+        // 1. Collect all skills in hotbar
+        const equippedSkills = [];
+        for (let key in player.hotbar) {
+            const skillId = player.hotbar[key];
             if (skillId) {
-                const activeSkillDef = Object.values(ActiveSkills).find(s => s.id === skillId);
-                const icon = activeSkillDef ? (activeSkillDef.icon || '❓') : '❓';
-                slot.innerHTML = `<div style="font-size: 20px;">${icon}</div>`;
-            } else {
-                slot.innerHTML = '';
+                const skillDef = Object.values(ActiveSkills).find(s => s.id === skillId);
+                if (skillDef) {
+                    equippedSkills.push({
+                        key: key,
+                        id: skillId,
+                        name: skillDef.name,
+                        icon: skillDef.icon || '❓',
+                        manaCost: skillDef.manaCost || 0,
+                        cooldown: skillDef.cooldown || 0,
+                        isDash: skillId === 'dash'
+                    });
+                }
             }
+        }
+
+        // 2. Sort skills: Dash first, then by manaCost (weakest to strongest)
+        equippedSkills.sort((a, b) => {
+            if (a.isDash) return -1;
+            if (b.isDash) return 1;
+            return a.manaCost - b.manaCost;
         });
 
-        // Update potion counts
-        const weakPotions = player.inventory.filter(i => i.item.id === 'health_potion');
-        const weakCount = weakPotions.reduce((sum, item) => sum + item.count, 0);
-        document.getElementById('potion-weak-count').textContent = weakCount;
+        // 3. Render skills
+        equippedSkills.forEach(skill => {
+            const isActivated = player.activatedSkills[skill.key];
+            if (!isActivated) return; // Only show actually activated skills
 
-        const strongPotions = player.inventory.filter(i => i.item.id === 'greater_health_potion');
-        const strongCount = strongPotions.reduce((sum, item) => sum + item.count, 0);
-        document.getElementById('potion-strong-count').textContent = strongCount;
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `hotbar-item active`;
+            
+            // Skill icon slot
+            const slotDiv = document.createElement('div');
+            slotDiv.className = 'hotbar-slot';
+            slotDiv.innerHTML = `
+                <div class="key-hint">${skill.key}</div>
+                <div style="font-size: 30px;">${skill.icon}</div>
+                <div class="cooldown-overlay" id="cd-overlay-${skill.key}"></div>
+            `;
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'skill-name-label';
+            labelDiv.textContent = skill.name;
+            
+            itemDiv.appendChild(slotDiv);
+            itemDiv.appendChild(labelDiv);
+            hotbarContainer.appendChild(itemDiv);
 
-        // Update mana potion counts
-        const manaPotions = player.inventory.filter(i =>
-            i.item.type === 'consumable' && i.item.effect && i.item.effect.healMP
-        );
-        const manaCount = manaPotions.reduce((sum, item) => sum + item.count, 0);
-        const mpCountEl = document.getElementById('potion-mp-count');
-        if (mpCountEl) mpCountEl.textContent = manaCount;
+            // Update Cooldown Overlay
+            this.updateSkillCooldownOverlay(skill.key, player);
+        });
+    }
+
+    // Toggle skill activation (called from Skills menu)
+    toggleSkillActivation(key, state, skillId) {
+        if (this.game.player) {
+            if (state) {
+                this.game.player.activatedSkills[key] = true;
+                this.game.player.hotbar[key] = skillId;
+                this.showNotification(`Habilidade ATIVADA na tecla ${key}`, 'success');
+            } else {
+                this.game.player.activatedSkills[key] = false;
+                this.game.player.hotbar[key] = null;
+                this.showNotification(`Habilidade DESATIVADA`, 'warning');
+            }
+            this.updateHotbar(this.game.player);
+            this.updateSkillsDisplay(this.game.player);
+        }
+    }
+
+    updateSkillCooldownOverlay(key, player) {
+        const overlay = document.getElementById(`cd-overlay-${key}`);
+        if (!overlay) return;
+
+        const skillId = player.hotbar[key];
+        if (!skillId) return;
+
+        let cooldown = 0;
+        let maxCooldown = 1;
+
+        if (skillId === 'dash') {
+            cooldown = player.dashCooldown || 0;
+            maxCooldown = ActiveSkills.DASH.cooldown || 6;
+        } else {
+            // Find cooldown in player._cooldowns or skill definition
+            cooldown = (player._cooldowns && player._cooldowns[skillId]) || 0;
+            const skillDef = Object.values(ActiveSkills).find(s => s.id === skillId);
+            maxCooldown = skillDef ? skillDef.cooldown : 1;
+        }
+
+        if (cooldown > 0) {
+            const percent = (cooldown / maxCooldown) * 100;
+            overlay.style.height = `${percent}%`;
+        } else {
+            overlay.style.height = '0%';
+        }
     }
 
     highlightHotbarSlot(key) {

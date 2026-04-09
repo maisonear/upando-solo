@@ -182,7 +182,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 20px;
+    padding: 40px 20px 20px 20px;
     background: linear-gradient(180deg, rgba(15, 15, 35, 0.95) 0%, transparent 100%);
 }
 
@@ -265,6 +265,11 @@ body {
 .xp-bar .bar-fill {
     background: linear-gradient(90deg, var(--xp-color), #059669);
     box-shadow: 0 0 10px var(--xp-color);
+}
+
+.dash-bar .bar-fill {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+    box-shadow: 0 0 10px #f59e0b;
 }
 
 .bar-text {
@@ -791,65 +796,84 @@ body {
     border-color: var(--success-color);
 }
 
-/* Hotbar */
-#hotbar {
+/* Vertical Hotbar */
+.vertical-hotbar {
     position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    right: 20px;
+    top: 150px;
     display: flex;
-    gap: 6px;
-    z-index: 10;
-    background: linear-gradient(0deg, rgba(15, 15, 35, 0.95) 0%, transparent 100%);
-    padding: 12px 20px;
-    border-radius: 50px;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 100;
+    pointer-events: auto;
+}
+
+.hotbar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: rgba(15, 15, 35, 0.8);
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.hotbar-item.inactive {
+    opacity: 0.6;
+    filter: grayscale(1);
 }
 
 .hotbar-slot {
-    width: 42px;
-    height: 42px;
+    width: 60px;
+    height: 60px;
     background: rgba(0, 0, 0, 0.7);
-    border: 2px solid #4ade80;
-    /* Solo Leveling green/blue hint */
-    border-radius: 6px;
+    border: 2px solid var(--primary-color);
+    border-radius: 10px;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 30px;
     transition: all 0.2s;
 }
 
-.hotbar-slot.active {
-    transform: scale(0.95);
+.hotbar-item.active .hotbar-slot {
+    box-shadow: 0 0 15px var(--primary-color);
     border-color: #fff;
-    box-shadow: 0 0 10px #4ade80;
 }
 
 .key-hint {
     position: absolute;
     top: -10px;
-    left: -5px;
+    left: -10px;
     background: #111;
     color: #fff;
-    font-size: 10px;
-    padding: 2px 5px;
+    font-size: 14px;
+    font-weight: 900;
+    padding: 2px 8px;
     border-radius: 4px;
-    border: 1px solid #333;
+    border: 1px solid var(--primary-color);
 }
 
-.hotbar-separator {
-    width: 2px;
-    background: rgba(255, 255, 255, 0.2);
-    margin: 0 5px;
+.skill-name-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-top: -5px;
 }
 
-.hotbar-slot .count {
+.hotbar-slot .cooldown-overlay {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
-    font-size: 12px;
-    color: #fff;
-    text-shadow: 1px 1px 0 #000;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    height: 0%;
+    transition: height 0.1s linear;
 }
 
 /* Left Side Controls */
@@ -1424,13 +1448,88 @@ body {
 }
 .btn-use:hover { background: rgba(59, 130, 246, 0.4); }
 
-/* ===== Class Section Titles ===== */
-.class-section-title {
+/* Skill Item inside Skills Panel */
+.skill-item {
+    background: rgba(15, 15, 35, 0.6);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.skill-item:hover {
+    background: rgba(15, 15, 35, 0.8);
+    border-color: var(--primary-color);
+}
+
+.skill-info {
+    flex: 1;
+}
+
+.skill-action-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.skill-key-hint {
+    background: var(--primary-color);
+    color: #fff;
+    padding: 8px 15px;
+    border-radius: 8px;
     font-family: 'Orbitron', sans-serif;
-    font-size: 20px;
-    color: var(--text-accent);
-    margin: 20px 0 12px;
-    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+    font-weight: 900;
+    font-size: 18px;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.skill-act-btns {
+    display: flex;
+    gap: 8px;
+}
+
+.skill-act-btn {
+    padding: 8px 12px;
+    border: 2px solid;
+    border-radius: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.skill-act-btn.activate {
+    border-color: #10b981;
+    color: #10b981;
+    background: transparent;
+}
+
+.skill-act-btn.activate:hover {
+    background: #10b981;
+    color: #fff;
+}
+
+.skill-act-btn.deactivate {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: transparent;
+}
+
+.skill-act-btn.deactivate:hover {
+    background: #ef4444;
+    color: #fff;
+}
+
+.skill-item.active-on-hotbar {
+    border-color: #4ade80;
+    box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
 }
 
 .rare-title {

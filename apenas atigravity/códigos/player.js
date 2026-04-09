@@ -84,8 +84,16 @@ class Player {
 
         // Hotbar (Skill assignments) - 10 slots: keys 1-9 and 0
         this.hotbar = {
-            '1': null, '2': null, '3': null, '4': null, '5': null,
+            '1': 'dash', // Dash is always on 1 by default now
+            '2': null, '3': null, '4': null, '5': null,
             '6': null, '7': null, '8': null, '9': null, '0': null
+        };
+
+        // Activated state for skills in hotbar
+        this.activatedSkills = {
+            '1': true, // Dash is active by default
+            '2': false, '3': false, '4': false, '5': false,
+            '6': false, '7': false, '8': false, '9': false, '0': false
         };
 
         // Movement
